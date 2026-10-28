@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>For Ila</title>
+  <!-- Canvas Confetti Library untuk Efek Perayaan -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    /* Reset & Dasar UI */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Modern Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+
+    /* Screen Management */
+    .screen {
+      display: none;
+      width: 100%;
+      min-height: 100vh;
+      opacity: 0;
+      transition: opacity 0.4s ease-in-out;
+    }
+    .screen.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    /* LOGIN SCREEN STYLES */
+    #login-screen {
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+      background: radial-gradient(circle at top right, #1e1b4b, #0f172a);
+    }
+
+    .login-card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+      text-align: center;
+    }
+
+    .login-header h2 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    .login-header p {
+      color: #94a3b8;
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+
+    .input-group {
+      margin-bottom: 1.25rem;
+      text-align: left;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #cbd5e1;
+      margin-bottom: 0.4rem;
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background-color: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .input-group input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.9rem;
+      background: linear-gradient(135deg, #38bdf8, #6366f1);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 0.5rem;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(56, 189, 248, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .error-msg {
+      color: #f87171;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      padding: 0.6rem;
+      border-radius: 8px;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .forgot-link {
+      margin-top: 1.25rem;
+      font-size: 0.8rem;
+      color: #94a3b8;
+      cursor: pointer;
+      text-decoration: underline;
+      display: inline-block;
+      transition: color 0.2s;
+    }
+    .forgot-link:hover {
+      color: #38bdf8;
+    }
+
+    /* MAIN APP STYLES */
+    #main-screen {
+      flex-direction: column;
+      align-items: center;
+      padding-bottom: 4rem;
+    }
+
+    navbar {
+      width: 100%;
+      max-width: 1100px;
+      padding: 1.5rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #1e293b;
+    }
+
+    .nav-brand {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #38bdf8, #a855f7);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn-secondary {
+      padding: 0.5rem 1rem;
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 3.5rem;
+    }
+
+    /* BIRTHDAY CARD STYLES */
+    .birthday-card {
+      position: relative;
+      background: linear-gradient(135deg, #1e1b4b 0%, #311042 50%, #1e293b 100%);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 0 20px rgba(168, 85, 247, 0.15);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .birthday-card::before {
+      content: '🎉';
+      position: absolute;
+      top: -15px;
+      left: -15px;
+      font-size: 4rem;
+      opacity: 0.15;
+      transform: rotate(-20deg);
+    }
+
+    .birthday-card::after {
+      content: '🎂';
+      position: absolute;
+      bottom: -15px;
+      right: -15px;
+      font-size: 4rem;
+      opacity: 0.15;
+      transform: rotate(15deg);
+    }
+
+    .badge-bday {
+      display: inline-block;
+      padding: 0.35rem 1rem;
+      background: rgba(168, 85, 247, 0.2);
+      border: 1px solid rgba(168, 85, 247, 0.4);
+      color: #c084fc;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1.25rem;
+    }
+
+    .bday-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      line-height: 1.2;
+    }
+
+    .bday-name {
+      font-size: 2.5rem;
+      font-weight: 900;
+      background: linear-gradient(135deg, #f43f5e, #fb923c, #facc15);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 1.25rem;
+      display: block;
+    }
+
+    .bday-message {
+      color: #cbd5e1;
+      font-size: 1.05rem;
+      line-height: 1.7;
+      max-width: 750px;
+      margin: 0 auto 2rem auto;
+      white-space: pre-line;
+    }
+
+    .bday-actions {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-celebrate {
+      padding: 0.75rem 1.8rem;
+      background: linear-gradient(135deg, #ec4899, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(236, 72, 153, 0.4);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-celebrate:hover {
+      transform: scale(1.05);
+      box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+    }
+
+    /* GALLERY STYLES */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      border-left: 4px solid #38bdf8;
+      padding-left: 0.75rem;
+      color: #e2e8f0;
+      font-weight: 700;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .photo-card {
+      position: relative;
+      background-color: #1e293b;
+      border-radius: 14px;
+      overflow: hidden;
+      aspect-ratio: 4 / 3;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+    }
+
+    .photo-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 10px 25px rgba(56, 189, 248, 0.25);
+    }
+
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .photo-card .caption {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 0.8rem;
+      background: linear-gradient(transparent, rgba(15, 23, 42, 0.95));
+      color: #f8fafc;
+      font-size: 0.85rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .photo-card:hover .caption {
+      opacity: 1;
+    }
+
+    .btn-del-photo {
+      background: rgba(239, 68, 68, 0.8);
+      border: none;
+      color: white;
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    /* VIDEO STYLES */
+    .video-container {
+      background-color: #1e293b;
+      border-radius: 16px;
+      padding: 1.25rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      max-width: 850px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .video-wrapper {
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border-radius: 10px;
+      overflow: hidden;
+      background-color: #000;
+    }
+
+    .video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    /* MODAL STYLES */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 18px;
+      padding: 2rem;
+      width: 100%;
+      max-width: 450px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: #fff;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+
+    /* LIGHTBOX MODAL */
+    .lightbox-card {
+      max-width: 90vw;
+      max-height: 85vh;
+      background: transparent;
+      box-shadow: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .lightbox-card img {
+      max-width: 100%;
+      max-height: 75vh;
+      border-radius: 12px;
+      object-fit: contain;
+    }
+
+    .lightbox-caption {
+      margin-top: 1rem;
+      color: #e2e8f0;
+      font-size: 1rem;
+      text-align: center;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 640px) {
+      .bday-title { font-size: 1.6rem; }
+      .bday-name { font-size: 1.8rem; }
+      .bday-message { font-size: 0.95rem; }
+      .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 0.75rem;
+      }
+      navbar { padding: 1rem; }
+      .login-card { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. SCREEN LOGIN -->
+  <section id="login-screen" class="screen active">
+    <div class="login-card">
+      <div class="login-header">
+        <h2>Kenangan Bersama</h2>
+        <p>Masukkan username dan PIN untuk membuka galeri</p>
+      </div>
+      <form id="login-form">
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" placeholder="Masukkan username" required autocomplete="off" />
+        </div>
+        <div class="input-group">
+          <label for="passcode">PIN / Passcode</label>
+          <input type="password" id="passcode" placeholder="Masukkan 6-digit PIN" required />
+        </div>
+        <button type="submit" class="btn-primary">Masuk Kebagian Utama</button>
+        <div id="error-msg" class="error-msg">Username atau PIN salah!</div>
+      </form>
+      <div class="forgot-link" onclick="resetToDefaultCredentials()">Lupa PIN / Reset Credential Default?</div>
+    </div>
+  </section>
+
+  <!-- 2. SCREEN UTAMA -->
+  <section id="main-screen" class="screen">
+    <navbar>
+      <div class="nav-brand">✨ Gallery Bersama</div>
+      <div class="nav-actions">
+        <button class="btn-secondary" onclick="openModal('settings-modal')">⚙️ Pengaturan</button>
+        <button class="btn-secondary" onclick="logout()">Keluar</button>
+      </div>
+    </navbar>
+
+    <main class="container">
+      
+      <!-- KARTU UCAPAN ULANG TAHUN -->
+      <section class="birthday-card">
+        <span class="badge-bday">Special Day</span>
+        <h1 class="bday-title" id="display-bday-title">Selamat Ulang Tahun My Love!</h1>
+        <span class="bday-name" id="display-bday-name">Lailatul Fitriah 20</span>
+        <p class="bday-message" id="display-bday-msg">
+          Selamat ulang tahun sayaaanggggg😍🥰😘🥳🥳🤩🤩✨✨🌟, selamat berkepala 2, semoga di umurmu yang menginjak ke 20 ini kamu menjadi pribadi yang lebih baik lagi dalam menata bahasa dan nada bicaramu kepada siapapun, semoga kamu diberikan kesehatan dan panjang umur, semoga mempunyai sifat yang lebih penyabar, tidak gampang terpengaruh dengan mood, makin pintar, makin pintar membuat keputusan, makin mandiri supaya kamu ga dianggap anak kecil lagi dikeluargamu agar apa yang kamu suarakan di keluargamu itu didengarkan, karena kamu layak didengarkan😍😍😘😘🥳. intinya semoga kamu menjadi pribadi yang lebih baik lagi dari yang kamerin, teruslah berkembang, belajar, dan berani mencoba banyak hal jangan sia-siakan kesempatanmu merantau di malang. semoga kita berdua dapat berkembang bersama ya sayanggg, dan kita terus berkembang hingga pulang kerumah yang sama😘🥳🥳. aku minta maaf selama dalam hubungan ini aku sering bikin kamu marah atau jengkel, ntah itu dari guyonanku atau perilakuku baik disengaja ataupun ga disengaja. maapin aku yaa sayangkuuu, mari tumbuh dan berkembang bersama terus hingaa jadi debu ya sayanagkuuuu LOPIYUUUUUU SAYAAANNGGGGGGG😍✨🥰🌟🥳😘😘🤍🤍💞💞💗💖💖💕💕💕
+        </p>
+        <div class="bday-actions">
+          <button class="btn-celebrate" onclick="triggerConfetti()">🎉 Rayakan! (Confetti)</button>
+          <button class="btn-secondary" onclick="openEditBdayModal()">✏️ Edit Ucapan</button>
+        </div>
+      </section>
+
+      <!-- GALERI FOTO ALBUM -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Koleksi Foto Album</h2>
+          <button class="btn-secondary" onclick="openModal('add-photo-modal')">+ Tambah Foto</button>
+        </div>
+        <div class="photo-grid" id="photo-grid">
+          <!-- Foto akan dimuat dinamis lewat JavaScript -->
+        </div>
+      </section>
+
+      <!-- VIDEO PLAYER -->
+      <section>
+        <div class="section-header">
+          <h2 class="section-title">Video Momen Unggulan</h2>
+          <button class="btn-secondary" onclick="openModal('edit-video-modal')">Ganti Video</button>
+        </div>
+        <div class="video-container">
+          <div class="video-wrapper">
+            <video id="main-video" controls poster="https://picsum.photos/id/1018/800/450">
+              <source id="video-source" src="video.mp4" type="video/mp4" />
+              Browser Anda tidak mendukung pemutaran video ini.
+            </video>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </section>
+
+  <!-- MODAL: TAMBAH FOTO -->
+  <div id="add-photo-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Tambah Foto BBaru</h3>
+      <div class="input-group">
+        <label>Pilih File Foto (Dari HP/Laptop)</label>
+        <input type="file" id="photo-file-input" accept="image/*" />
+      </div>
+      <p style="text-align: center; color: #64748b; margin: 0.5rem 0; font-size: 0.85rem;">— Atau masukan URL Gambar —</p>
+      <div class="input-group">
+        <label>URL Gambar Online</label>
+        <input type="text" id="photo-url-input" placeholder="https://example.com/foto.jpg" />
+      </div>
+      <div class="input-group">
+        <label>Keterangan / Caption Foto</label>
+        <input type="text" id="photo-caption-input" placeholder="Contoh: Momen Liburan" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('add-photo-modal')">Batal</button>
+        <button class="btn-primary" style="width: auto;" onclick="addNewPhoto()">Simpan Foto</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT UCAPAN ULANG TAHUN -->
+  <div id="edit-bday-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Edit Kartu Ucapan</h3>
+      <div class="input-group">
+        <label>Judul Utama</label>
+        <input type="text" id="edit-bday-title-input" />
+      </div>
+      <div class="input-group">
+        <label>Nama Penerima / Sub-Judul</label>
+        <input type="text" id="edit-bday-name-input" />
+      </div>
+      <div class="input-group">
+        <label>Pesan Doa & Harapan</label>
+        <textarea id="edit-bday-msg-input" rows="4" style="width: 100%; padding: 0.85rem; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: #fff; font-family: inherit; outline: none;"></textarea>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-bday-modal')">Batal</button>
+        <button class="btn-primary" style="width: auto;" onclick="saveBdayCard()">Simpan Ucapan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PENGATURAN KREDENSIAL -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Ubah Username & PIN</h3>
+      <div class="input-group">
+        <label>Username Baru</label>
+        <input type="text" id="new-username" placeholder="Masukkan username baru" />
+      </div>
+      <div class="input-group">
+        <label>PIN Baru</label>
+        <input type="password" id="new-pin" placeholder="Masukkan PIN baru" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('settings-modal')">Batal</button>
+        <button class="btn-primary" style="width: auto;" onclick="saveCredentials()">Simpan Perubahan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: GANTI VIDEO -->
+  <div id="edit-video-modal" class="modal-overlay">
+    <div class="modal-card">
+      <h3>Ganti URL Video</h3>
+      <div class="input-group">
+        <label>URL Video MP4</label>
+        <input type="text" id="video-url-input" placeholder="Masukkan link video mp4" />
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeModal('edit-video-modal')">Batal</button>
+        <button class="btn-primary" style="width: auto;" onclick="saveVideoUrl()">Update Video</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: LIGHTBOX PREVIEW FOTO FULL -->
+  <div id="lightbox-modal" class="modal-overlay" onclick="closeModal('lightbox-modal')">
+    <div class="lightbox-card" onclick="event.stopPropagation()">
+      <img id="lightbox-img" src="" alt="Preview Full" />
+      <div id="lightbox-caption" class="lightbox-caption"></div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT SYSTEM LOGIC -->
+  <script>
+    // 1. DATA DEFAULT INITIALIZATION
+    const DEFAULT_USER = "laris";
+    const DEFAULT_PIN = "272805";
+
+    const defaultPhotos = [
+      { id: 1, src: "https://drive.google.com/file/d/1C1Ai-DTo4s4uIuFhou54b8lGmIT9iI00/view?usp=sharing", caption: "Momen Pemandangan Indah 1" },
+      { id: 2, src: "https://drive.google.com/file/d/1a6qIMozM4IxvDu9GFHiA40q9r-9JzRLs/view?usp=sharing", caption: "Momen Pemandangan Indah 2" },
+      { id: 3, src: "https://drive.google.com/file/d/1H1QwFPZYupTXsj-01q-bcc7R1zlJBc2I/view?usp=sharing", caption: "Potret Alam & Satwa" },
+      { id: 4, src: "https://drive.google.com/file/d/1VUDKHLnOvO8cQ7qrRu-qgEjy7-g3cqHI/view?usp=sharing", caption: "Kenangan Perjalanan" },
+      { id: 5, src: "https://drive.google.com/file/d/1jyKZ0pOLeBvYiE6dn63pxjsLzRS3KV0N/view?usp=sharing", caption: "Suasana Pegunungan" },
+      { id: 6, src: "https://drive.google.com/file/d/1Tnfih___70t_cVvUoZpP8NniVrLMgWDI/view?usp=sharing", caption: "Momen Bersama Kawan" }
+    ];
+
+    // Helper Fungsi LocalStorage
+    function getStoredData(key, fallback) {
+      const data = localStorage.getItem(key);
+      return data ? JSON.parse(data) : fallback;
+    }
+
+    function setStoredData(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+
+    // Load initial credentials & content
+    let currentUsername = getStoredData('album_username', DEFAULT_USER);
+    let currentPin = getStoredData('album_pin', DEFAULT_PIN);
+    let photosList = getStoredData('album_photos', defaultPhotos);
+    let bdayCardData = getStoredData('album_bday_card', {
+      title: "Selamat Ulang Tahun My Lovee!",
+      name: "Lailatul Fitriah 20 Tahun",
+      msg: "Selamat ulang tahun sayaaanggggg😍🥰😘🥳🥳🤩🤩✨✨🌟, selamat berkepala 2, semoga di umurmu yang menginjak ke 20 ini kamu menjadi pribadi yang lebih baik lagi dalam menata bahasa dan nada bicaramu kepada siapapun, semoga kamu diberikan kesehatan dan panjang umur, semoga mempunyai sifat yang lebih penyabar, tidak gampang terpengaruh dengan mood, makin pintar, makin pintar membuat keputusan, makin mandiri supaya kamu ga dianggap anak kecil lagi dikeluargamu agar apa yang kamu suarakan di keluargamu itu didengarkan, karena kamu layak didengarkan😍😍😘😘🥳. intinya semoga kamu menjadi pribadi yang lebih baik lagi dari yang kamerin, teruslah berkembang, belajar, dan berani mencoba banyak hal jangan sia-siakan kesempatanmu merantau di malang. semoga kita berdua dapat berkembang bersama ya sayanggg, dan kita terus berkembang hingga pulang kerumah yang sama😘🥳🥳. aku minta maaf selama dalam hubungan ini aku sering bikin kamu marah atau jengkel, ntah itu dari guyonanku atau perilakuku baik disengaja ataupun ga disengaja. maapin aku yaa sayangkuuu, mari tumbuh dan berkembang bersama terus hingaa jadi debu ya sayanagkuuuu LOPIYUUUUUU SAYAAANNGGGGGGG😍✨🥰🌟🥳😘😘🤍🤍💞💞💗💖💖💕💕💕"
+    });
+
+    // 2. AUTHENTICATION & LOGIN LOGIC
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const userIn = document.getElementById('username').value.trim();
+      const pinIn = document.getElementById('passcode').value.trim();
+      const errorMsg = document.getElementById('error-msg');
+
+      if (userIn === currentUsername && pinIn === currentPin) {
+        errorMsg.style.display = 'none';
+        switchScreen('main-screen');
+        initMainScreen();
+        triggerConfetti(); // Efek confetti sambutan
+      } else {
+        errorMsg.style.display = 'block';
+      }
+    });
+
+    function resetToDefaultCredentials() {
+      if (confirm("Reset Username & PIN kembali ke default (Username: laris | PIN: 272805)?")) {
+        localStorage.removeItem('album_username');
+        localStorage.removeItem('album_pin');
+        currentUsername = DEFAULT_USER;
+        currentPin = DEFAULT_PIN;
+        alert("Kredensial berhasil direset!\nUsername: laris\nPIN: 272805");
+      }
+    }
+
+    function switchScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById(screenId).classList.add('active');
+    }
+
+    function logout() {
+      switchScreen('login-screen');
+      document.getElementById('username').value = '';
+      document.getElementById('passcode').value = '';
+    }
+
+    // 3. MAIN SCREEN RENDER & HANDLERS
+    function initMainScreen() {
+      renderBdayCard();
+      renderPhotos();
+    }
+
+    // Render Bday Card
+    function renderBdayCard() {
+      document.getElementById('display-bday-title').innerText = bdayCardData.title;
+      document.getElementById('display-bday-name').innerText = bdayCardData.name;
+      document.getElementById('display-bday-msg').innerText = bdayCardData.msg;
+    }
+
+    function openEditBdayModal() {
+      document.getElementById('edit-bday-title-input').value = bdayCardData.title;
+      document.getElementById('edit-bday-name-input').value = bdayCardData.name;
+      document.getElementById('edit-bday-msg-input').value = bdayCardData.msg;
+      openModal('edit-bday-modal');
+    }
+
+    function saveBdayCard() {
+      bdayCardData.title = document.getElementById('edit-bday-title-input').value.trim() || "Selamat Ulang Tahun!";
+      bdayCardData.name = document.getElementById('edit-bday-name-input').value.trim() || "Special Person";
+      bdayCardData.msg = document.getElementById('edit-bday-msg-input').value.trim();
+      
+      setStoredData('album_bday_card', bdayCardData);
+      renderBdayCard();
+      closeModal('edit-bday-modal');
+    }
+
+    // Confetti FX
+    function triggerConfetti() {
+      if (typeof confetti === 'function') {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+      }
+    }
+
+    // Render Photo Grid
+    function renderPhotos() {
+      const grid = document.getElementById('photo-grid');
+      grid.innerHTML = '';
+
+      photosList.forEach(photo => {
+        const card = document.createElement('div');
+        card.className = 'photo-card';
+        card.onclick = () => openLightbox(photo.src, photo.caption);
+
+        card.innerHTML = `
+          <img src="${photo.src}" alt="${photo.caption}" loading="lazy">
+          <div class="caption">
+            <span>${photo.caption}</span>
+            <button class="btn-del-photo" onclick="deletePhoto(event, ${photo.id})">Hapus</button>
+          </div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function addNewPhoto() {
+      const fileInput = document.getElementById('photo-file-input');
+      const urlInput = document.getElementById('photo-url-input').value.trim();
+      const caption = document.getElementById('photo-caption-input').value.trim() || 'Foto Baru';
+
+      if (fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          savePhotoToList(e.target.result, caption);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else if (urlInput) {
+        savePhotoToList(urlInput, caption);
+      } else {
+        alert('Silakan pilih file foto atau masukkan URL gambar!');
+      }
+    }
+
+    function savePhotoToList(src, caption) {
+      const newPhoto = {
+        id: Date.now(),
+        src: src,
+        caption: caption
+      };
+      photosList.unshift(newPhoto);
+      setStoredData('album_photos', photosList);
+      renderPhotos();
+      
+      // Clear inputs & close modal
+      document.getElementById('photo-file-input').value = '';
+      document.getElementById('photo-url-input').value = '';
+      document.getElementById('photo-caption-input').value = '';
+      closeModal('add-photo-modal');
+    }
+
+    function deletePhoto(event, id) {
+      event.stopPropagation();
+      if (confirm('Yakin ingin menghapus foto ini dari album?')) {
+        photosList = photosList.filter(p => p.id !== id);
+        setStoredData('album_photos', photosList);
+        renderPhotos();
+      }
+    }
+
+    // Lightbox Modal
+    function openLightbox(src, caption) {
+      document.getElementById('lightbox-img').src = src;
+      document.getElementById('lightbox-caption').innerText = caption;
+      openModal('lightbox-modal');
+    }
+
+    // Settings Modal (Credentials Update)
+    function saveCredentials() {
+      const newU = document.getElementById('new-username').value.trim();
+      const newP = document.getElementById('new-pin').value.trim();
+
+      if (!newU || !newP) {
+        alert('Username dan PIN tidak boleh kosong!');
+        return;
+      }
+
+      currentUsername = newU;
+      currentPin = newP;
+      setStoredData('album_username', currentUsername);
+      setStoredData('album_pin', currentPin);
+
+      alert('Username dan PIN berhasil diperbarui!');
+      closeModal('settings-modal');
+      document.getElementById('new-username').value = '';
+      document.getElementById('new-pin').value = '';
+    }
+
+    // Video Handler
+    function saveVideoUrl() {
+      const url = document.getElementById('video-url-input').value.trim();
+      if (url) {
+        const video = document.getElementById('main-video');
+        const source = document.getElementById('video-source');
+        source.src = url;
+        video.load();
+        closeModal('edit-video-modal');
+      }
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.add('active');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('active');
+    }
+  </script>
+</body>
+</html>
